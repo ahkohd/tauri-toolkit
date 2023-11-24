@@ -12,6 +12,16 @@ pub struct GetAppIconError {
     source: macos::request::GetIconError,
 }
 
+#[cfg(target_os = "windows")]
+pub fn get_icon(app_path: &Path, save_path: &Path, size: f64) -> Result<(), GetAppIconError> {
+    unimplemented!();
+}
+
+#[cfg(target_os = "linux")]
+pub fn get_icon(app_path: &Path, save_path: &Path, size: f64) -> Result<(), GetAppIconError> {
+    unimplemented!();
+}
+
 #[cfg(target_os = "macos")]
 pub fn get_icon(app_path: &Path, save_path: &Path, size: f64) -> Result<(), GetAppIconError> {
     macos::request::get_icon(app_path, save_path, size)?;
