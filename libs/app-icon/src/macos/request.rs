@@ -18,16 +18,14 @@ extern "C" {
     pub static NSDeviceRGBColorSpace: id;
 }
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, PartialEq)]
 pub enum GetIconError {
     #[error("app path does not exist")]
     AppPathDoesNotExist,
-    #[error("app path does not end with '.app'")]
+    #[error("app path does not have '.app' extension")]
     AppPathDoesNotEndWithApp,
-    #[error("parent of app path does not exist")]
-    AppPathParentDoesNotExist,
-    #[error("save path does not exist")]
-    SavePathDoesNotExist,
+    #[error("save path parent directory does not exist")]
+    SavePathParentDirDoesNotExist,
     #[error("failed to convert {0} to &str")]
     PathConversionError(&'static str),
     #[error("Failed to create a CString from the path")]
@@ -43,12 +41,12 @@ pub fn get_icon(app_path: &Path, save_path: &Path, icon_size: f64) -> Result<(),
         return Err(GetIconError::AppPathDoesNotEndWithApp);
     }
 
-    let parent = app_path
+    let parent = save_path
         .parent()
-        .ok_or(GetIconError::AppPathParentDoesNotExist)?;
+        .ok_or(GetIconError::SavePathParentDirDoesNotExist)?;
 
     if !parent.exists() {
-        return Err(GetIconError::SavePathDoesNotExist);
+        return Err(GetIconError::SavePathParentDirDoesNotExist);
     }
 
     autoreleasepool(|| unsafe {
