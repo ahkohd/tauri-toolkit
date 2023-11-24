@@ -1,4 +1,4 @@
-A library to the app icon from an app bundle.
+A library to get the app icon from an app bundle.
 
 ### Install
 _This lib requires a Rust version of at least **1.64**_
