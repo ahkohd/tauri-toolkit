@@ -10,7 +10,7 @@ tauri-build = "1"
 serde_json = "1"
 thiserror = "1"
 
-cocoa = "0.24.0"
+cocoa = "0.25.0"
 objc = "0.2.7"
 core-foundation = "0.9.3"
 
