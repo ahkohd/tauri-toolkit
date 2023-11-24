@@ -1,0 +1,21 @@
+[workspace]
+members = ["libs/*"]
+resolver = "2"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+log = "0.4"
+tauri = "1"
+tauri-build = "1"
+serde_json = "1"
+thiserror = "1"
+
+cocoa = "0.24.0"
+objc = "0.2.7"
+core-foundation = "0.9.3"
+
+[workspace.package]
+edition = "2021"
+authors = [ "Victor Aremu <victor.olorunbunmi@gmail.com>" ]
+license = "Apache-2.0 OR MIT"
+rust-version = "1.64"
