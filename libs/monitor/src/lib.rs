@@ -51,7 +51,7 @@ impl Monitor {
         self.size
     }
 
-    pub fn safe_area(&self) -> VisibleArea {
+    pub fn visible_area(&self) -> VisibleArea {
         self.visible_area.clone()
     }
 
