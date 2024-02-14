@@ -19,7 +19,7 @@ use objc::{
 };
 use tauri::{PhysicalPosition, PhysicalSize};
 
-use crate::Monitor;
+use crate::{Monitor, VisibleArea};
 
 use super::utils::nsstring_to_string;
 
@@ -47,7 +47,7 @@ pub fn get_monitor_with_cursor() -> Option<Monitor> {
 
         let mut next_screen: id;
 
-        let frame_with_cursor: Option<NSRect> = loop {
+        let frames: Option<(NSRect, NSRect)> = loop {
             next_screen = unsafe { msg_send![screens_iter, nextObject] };
 
             if next_screen == nil {
@@ -56,15 +56,17 @@ pub fn get_monitor_with_cursor() -> Option<Monitor> {
 
             let frame: NSRect = unsafe { msg_send![next_screen, frame] };
 
+            let visible_frame: NSRect = unsafe { msg_send![next_screen, visibleFrame] };
+
             let is_mouse_in_screen_frame: BOOL =
                 unsafe { NSMouseInRect(mouse_location, frame, NO) };
 
             if is_mouse_in_screen_frame == YES {
-                break Some(frame);
+                break Some((frame, visible_frame));
             }
         };
 
-        if let Some(frame) = frame_with_cursor {
+        if let Some((frame, visible_frame)) = frames {
             let screen_name = nsstring_to_string(unsafe { msg_send![next_screen, localizedName] });
 
             let scale_factor: CGFloat = unsafe { msg_send![next_screen, backingScaleFactor] };
@@ -108,12 +110,22 @@ pub fn get_monitor_with_cursor() -> Option<Monitor> {
                 uuid,
                 name: screen_name,
                 position: PhysicalPosition {
-                    x: (frame.origin.x * scale_factor) as i32,
-                    y: (frame.origin.y * scale_factor) as i32,
+                    x: frame.origin.x * scale_factor,
+                    y: frame.origin.y * scale_factor,
                 },
                 size: PhysicalSize {
-                    width: (frame.size.width * scale_factor) as u32,
-                    height: (frame.size.height * scale_factor) as u32,
+                    width: frame.size.width * scale_factor,
+                    height: frame.size.height * scale_factor,
+                },
+                visible_area: VisibleArea {
+                    size: PhysicalSize {
+                        width: visible_frame.size.width * scale_factor,
+                        height: visible_frame.size.height * scale_factor,
+                    },
+                    position: PhysicalPosition {
+                        x: visible_frame.origin.x * scale_factor,
+                        y: visible_frame.origin.y * scale_factor,
+                    },
                 },
                 scale_factor,
                 has_cursor: true,
@@ -147,6 +159,8 @@ pub fn get_monitors() -> Vec<Monitor> {
             }
 
             let frame: NSRect = unsafe { msg_send![next_screen, frame] };
+
+            let visible_frame: NSRect = unsafe { msg_send![next_screen, visibleFrame] };
 
             let is_mouse_in_screen_frame: BOOL =
                 unsafe { NSMouseInRect(mouse_location, frame, NO) };
@@ -194,12 +208,22 @@ pub fn get_monitors() -> Vec<Monitor> {
                 uuid,
                 name: screen_name,
                 position: PhysicalPosition {
-                    x: (frame.origin.x * scale_factor) as i32,
-                    y: (frame.origin.y * scale_factor) as i32,
+                    x: frame.origin.x * scale_factor,
+                    y: frame.origin.y * scale_factor,
                 },
                 size: PhysicalSize {
-                    width: (frame.size.width * scale_factor) as u32,
-                    height: (frame.size.height * scale_factor) as u32,
+                    width: frame.size.width * scale_factor,
+                    height: frame.size.height * scale_factor,
+                },
+                visible_area: VisibleArea {
+                    size: PhysicalSize {
+                        width: visible_frame.size.width * scale_factor,
+                        height: visible_frame.size.height * scale_factor,
+                    },
+                    position: PhysicalPosition {
+                        x: visible_frame.origin.x * scale_factor,
+                        y: visible_frame.origin.y * scale_factor,
+                    },
                 },
                 scale_factor,
                 has_cursor: is_mouse_in_screen_frame == YES,
