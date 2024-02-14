@@ -11,6 +11,16 @@ pub struct VisibleArea {
     position: PhysicalPosition<f64>,
 }
 
+impl VisibleArea {
+    pub fn size(&self) -> PhysicalSize<f64> {
+        self.size
+    }
+
+    pub fn position(&self) -> PhysicalPosition<f64> {
+        self.position
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Monitor {
     id: CGDirectDisplayID,
