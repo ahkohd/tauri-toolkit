@@ -6,15 +6,22 @@ use tauri::{PhysicalPosition, PhysicalSize};
 mod macos;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct VisibleArea {
+    size: PhysicalSize<f64>,
+    position: PhysicalPosition<f64>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Monitor {
     id: CGDirectDisplayID,
     uuid: Option<String>,
     name: Option<String>,
-    size: PhysicalSize<u32>,
-    position: PhysicalPosition<i32>,
+    size: PhysicalSize<f64>,
+    position: PhysicalPosition<f64>,
     scale_factor: f64,
     has_cursor: bool,
     is_primary: bool,
+    visible_area: VisibleArea,
 }
 
 impl Monitor {
@@ -30,11 +37,15 @@ impl Monitor {
         self.name.as_ref()
     }
 
-    pub fn size(&self) -> PhysicalSize<u32> {
+    pub fn size(&self) -> PhysicalSize<f64> {
         self.size
     }
 
-    pub fn position(&self) -> PhysicalPosition<i32> {
+    pub fn safe_area(&self) -> VisibleArea {
+        self.visible_area.clone()
+    }
+
+    pub fn position(&self) -> PhysicalPosition<f64> {
         self.position
     }
 
