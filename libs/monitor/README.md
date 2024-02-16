@@ -15,19 +15,67 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 [dependencies]
 monitor = { git = "https://github.com/ahkohd/tauri-toolkit", branch = "main" }
+
+## Functions
+
+- `get_monitor_with_cursor() -> Option<Monitor>`:
+  Returns the monitor which currently hosts the system pointer, if any.
+
+- `get_monitors() -> Vec<Monitor>`:
+  Returns a vector of all connected monitors.
 ```
 ## Usage
 ```rust
 use monitor::{get_monitors, get_monitor_with_cursor};
 
 fn main() {
-    // get all monitors
     let monitors = get_monitors();
 
-    // get the monitor with cursor
     let monitor_with_cursor = get_monitor_with_cursor();
 }
 ```
+
+### Monitor
+The struct Monitor provides properties of a single display monitor, defined as follows:
+```rust
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Monitor {
+    id: CGDirectDisplayID,
+    uuid: Option<String>,
+    name: Option<String>,
+    size: PhysicalSize<f64>,
+    position: PhysicalPosition<f64>,
+    scale_factor: f64,
+    has_cursor: bool,
+    is_primary: bool,
+    visible_area: VisibleArea,
+}
+```
+It includes the following fields:
+- `id`: a unique identifier for the monitor
+- `uuid`: the UUID of the monitor, if any
+- `name`: the name of the monitor, if available
+- `size`: the size of the monitor, specified as a PhysicalSize struct
+- `position`: the position of the monitor, specified as a PhysicalPosition struct
+- `scale_factor`: the scaling factor of the monitor's resolution
+- `has_cursor`: a Boolean flag indicating if the monitor currently has a cursor
+- `is_primary`: a Boolean flag indicating if the monitor is the primary monitor
+- `visible_area`: the visible area of the monitor
+
+### VisibleArea
+
+This visible area is represented by the struct `VisibleArea` defined as follows:
+
+```rust
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct VisibleArea {
+    size: PhysicalSize<f64>,
+    position: PhysicalPosition<f64>,
+}
+```
+It includes fields:
+- `size`: the size of the visible area specified as a PhysicalSize struct containing width and height as f64.
+- `position`: the position of the visible area on screen specified as a PhysicalPosition struct containing x and y as f64.
 
 ## Contributing
 
