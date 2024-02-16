@@ -1,4 +1,3 @@
-use core_graphics::display::CGDirectDisplayID;
 use serde::{Deserialize, Serialize};
 use tauri::{PhysicalPosition, PhysicalSize};
 
@@ -23,7 +22,7 @@ impl VisibleArea {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Monitor {
-    id: CGDirectDisplayID,
+    id: u32,
     uuid: Option<String>,
     name: Option<String>,
     size: PhysicalSize<f64>,
@@ -35,7 +34,7 @@ pub struct Monitor {
 }
 
 impl Monitor {
-    pub fn id(&self) -> CGDirectDisplayID {
+    pub fn id(&self) -> u32 {
         self.id
     }
 
