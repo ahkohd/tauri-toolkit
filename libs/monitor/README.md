@@ -15,6 +15,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 [dependencies]
 monitor = { git = "https://github.com/ahkohd/tauri-toolkit", branch = "main" }
+```
 
 ## Functions
 
@@ -23,7 +24,7 @@ monitor = { git = "https://github.com/ahkohd/tauri-toolkit", branch = "main" }
 
 - `get_monitors() -> Vec<Monitor>`:
   Returns a vector of all connected monitors.
-```
+
 ## Usage
 ```rust
 use monitor::{get_monitors, get_monitor_with_cursor};
