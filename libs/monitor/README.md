@@ -41,7 +41,7 @@ The struct Monitor provides properties of a single display monitor, defined as f
 ```rust
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Monitor {
-    id: CGDirectDisplayID,
+    id: u32,
     uuid: Option<String>,
     name: Option<String>,
     size: PhysicalSize<f64>,
