@@ -73,11 +73,35 @@ impl Monitor {
 }
 
 pub fn get_monitor_with_cursor() -> Option<Monitor> {
+    #[cfg(target_os = "windows")]
+    {
+        unimplemented!()
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        unimplemented!()
+    }
+
     #[cfg(target_os = "macos")]
-    return macos::monitor::get_monitor_with_cursor();
+    {
+        return macos::monitor::get_monitor_with_cursor();
+    }
 }
 
 pub fn get_monitors() -> Vec<Monitor> {
+    #[cfg(target_os = "windows")]
+    {
+        unimplemented!()
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        unimplemented!()
+    }
+
     #[cfg(target_os = "macos")]
-    return macos::monitor::get_monitors();
+    {
+        return macos::monitor::get_monitors();
+    }
 }
