@@ -17,14 +17,6 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 monitor = { git = "https://github.com/ahkohd/tauri-toolkit", branch = "main" }
 ```
 
-## Functions
-
-- `get_monitor_with_cursor() -> Option<Monitor>`:
-  Returns the monitor which currently hosts the system pointer, if any.
-
-- `get_monitors() -> Vec<Monitor>`:
-  Returns a vector of all connected monitors.
-
 ## Usage
 ```rust
 use monitor::{get_monitors, get_monitor_with_cursor};
@@ -35,6 +27,14 @@ fn main() {
     let monitor_with_cursor = get_monitor_with_cursor();
 }
 ```
+
+## Functions
+
+- `get_monitor_with_cursor() -> Option<Monitor>`:
+  Returns the monitor which currently hosts the system pointer, if any.
+
+- `get_monitors() -> Vec<Monitor>`:
+  Returns a vector of all connected monitors.
 
 ### Monitor
 The struct Monitor provides properties of a single display monitor, defined as follows:
