@@ -13,7 +13,7 @@ thiserror = "1"
 cocoa = "0.25.0"
 objc = "0.2.7"
 core-foundation = "0.9.4"
-core-graphics = "0.23.1"
+core-graphics = "0.23.2"
 
 [workspace.package]
 edition = "2021"
