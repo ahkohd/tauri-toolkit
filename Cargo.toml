@@ -3,7 +3,7 @@ members = ["libs/*"]
 resolver = "2"
 
 [workspace.dependencies]
-serde = { version = "1", features = ["derive"] }
+serde = { version = "1.0.200", features = ["derive"] }
 log = "0.4"
 tauri = "1"
 tauri-build = "1"
