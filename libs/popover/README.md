@@ -17,6 +17,11 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 popover = { git = "https://github.com/ahkohd/tauri-toolkit", branch = "main" }
 ```
 
+### Demo
+See an [example project](https://github.com/ahkohd/tauri-macos-menubar-app-example/tree/popover) that uses this `popover` lib.
+
+<img width="515" alt="image" src="https://github.com/ahkohd/tauri-macos-menubar-app-example/assets/13041443/68cf6e28-5dff-45c1-8fc6-78386839234d">
+
 ## Usage
 ```rust
 use popover;
@@ -48,25 +53,14 @@ Here is the description of the fields in this struct:
 - `popover_to_status_item_margin`: CGFloat indicating the margin or distance between the popover and the status item.
 - `right_edge_margin`: CGFloat representing the margin or spacing to the right edge of the popover.
 
-## NSColor
-Both the `background_color` and `border_color` fields use instances of the `NSColor` struct from the `objc2_foundation` library. This allows for a wide range of color configurations using RGB, HSB, or named colors in your popover.
-
-```rust
-let bg_color = NSColor::rgba(0.5, 0.5, 0.5, 1.0);  // RGB with alpha
-
-let border_color = NSColor::named("Blue");  // Named color
-```
-
-The above example creates a grey background color and a blue border color.
-
-## Usage 
-
 To create a new `PopoverConfig`, you can use the following example:
 
 ```rust
 use obj2_app_kit::{ NSEdgeInsetsZero };
 
 use objc::{ msg_send, class, sel, sel_impl };
+
+use cocoa::base::id;
 
 let background_color: id = unsafe { msg_send![class!(NSColor), windowBackgroundColor] };
 
