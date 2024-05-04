@@ -8,7 +8,7 @@ log = "0.4"
 tauri = "1"
 tauri-build = "1"
 serde_json = "1"
-thiserror = "1"
+thiserror = "1.0.59"
 
 cocoa = "0.25.0"
 objc = "0.2.7"
