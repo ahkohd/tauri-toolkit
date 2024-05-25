@@ -14,7 +14,7 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 `src-tauri/Cargo.toml`
 ```toml
 [dependencies]
-popover = { git = "https://github.com/ahkohd/tauri-toolkit", branch = "main" }
+popover = { git = "https://github.com/ahkohd/tauri-toolkit", branch = "v2" }
 ```
 
 ### Demo
