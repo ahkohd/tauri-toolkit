@@ -1573,6 +1573,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "menubar"
+version = "0.1.0"
+dependencies = [
+ "cocoa 0.25.0",
+ "core-foundation",
+ "core-graphics 0.23.2",
+ "objc",
+ "serde",
+ "tauri",
+ "thiserror",
+]
+
+[[package]]
 name = "miniz_oxide"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
