@@ -59,7 +59,7 @@ To use any of these methods, you need to have an instance of a `Menubar`.
 For example: 
 ```rust
 let menubar_height = menubar.height(); 
-let menubar_scale_factor = menubar.uuid();
+let menubar_scale_factor = menubar.scale_factor();
 ```
 
 ## Contributing
