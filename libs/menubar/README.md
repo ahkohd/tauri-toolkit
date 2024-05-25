@@ -36,7 +36,7 @@ fn main() {
 The struct Menubar provides properties are defined as follows:
 ```rust
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Monitor {
+pub struct Menubar {
     height: f64,
     scale_factor: f64,
 }
@@ -45,16 +45,16 @@ It includes the following fields:
 - `height`: the height of the menubar
 - `scale_factor`: the scaling factor of the monitor's resolution
 
-#### Monitor Methods
+#### Menubar Methods
 
-`Monitor` struct provides the following methods to fetch its attributes:
+`Menubar` struct provides the following methods to fetch its attributes:
 
 - `height(&self) -> f64`: This method returns the height.
 
 - `scale_factor(&self) -> f64`: This method returns the scale factor of the monitor.
 
 
-To use any of these methods, you need to have an instance of a `Monitor`.
+To use any of these methods, you need to have an instance of a `Menubar`.
 
 For example: 
 ```rust
