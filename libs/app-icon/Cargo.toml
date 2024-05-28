@@ -16,3 +16,6 @@ thiserror.workspace = true
 cocoa.workspace = true
 objc.workspace = true
 core-foundation.workspace = true
+
+[target."cfg(target_os = \"windows\")".dependencies]
+windows-sys.workspace = true

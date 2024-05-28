@@ -4,17 +4,24 @@ use thiserror::Error;
 #[cfg(target_os = "macos")]
 mod macos;
 
+#[cfg(target_os = "windows")]
+mod windows;
+
 #[derive(Error, Debug)]
 #[error("get app icon error")]
 pub struct GetAppIconError {
     #[cfg(target_os = "macos")]
     #[from]
     source: macos::request::GetIconError,
+    #[cfg(target_os = "windows")]
+    #[from]
+    source: windows::GetIconError,
 }
 
 #[cfg(target_os = "windows")]
 pub fn get_icon(app_path: &Path, save_path: &Path, size: f64) -> Result<(), GetAppIconError> {
-    unimplemented!();
+    windows::get_icon(app_path, save_path, size)?;
+    Ok(())
 }
 
 #[cfg(target_os = "linux")]

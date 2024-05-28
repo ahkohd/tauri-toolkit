@@ -70,6 +70,7 @@ dependencies = [
  "core-foundation",
  "objc",
  "thiserror",
+ "windows-sys",
 ]
 
 [[package]]
