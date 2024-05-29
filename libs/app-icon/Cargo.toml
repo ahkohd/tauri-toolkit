@@ -19,3 +19,4 @@ core-foundation.workspace = true
 
 [target."cfg(target_os = \"windows\")".dependencies]
 windows-sys.workspace = true
+image.workspace = true

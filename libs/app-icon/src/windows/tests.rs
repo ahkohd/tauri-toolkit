@@ -14,8 +14,8 @@ fn app_path_does_not_exist() {
 
 #[test]
 fn it_works() {
-    let app_path = Path::new(r"C:\Program Files\Git\git-bash.exe");
-    let save_path = Path::new(r"C:\Windows\Temp\fit.png");
+    let app_path = Path::new(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe");
+    let save_path = Path::new(r"C:\Windows\Temp\edge.png");
     match get_icon(app_path, save_path, 64.0) {
         Ok(info) => println!("Icon Information"),
         Err(e) => eprintln!("Error: {}", e),

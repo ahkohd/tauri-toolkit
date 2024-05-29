@@ -1,17 +1,19 @@
-use std::fs::File;
-use std::io::Write;
-use std::os::windows::prelude::*;
+use std::os::windows::ffi::OsStrExt;
 use std::path::Path;
-use std::ptr::null_mut;
-
-use thiserror::Error;
-
-use windows_sys::Win32::Graphics::Gdi::{
-    CreateDIBSection, GetObjectW, BITMAP, BITMAPINFO, BITMAPINFOHEADER, DIB_RGB_COLORS, HDC,
-    RGBQUAD,
+use std::{
+    mem::{self, MaybeUninit},
+    ptr::addr_of_mut,
 };
+
+use image::RgbaImage;
+use thiserror::Error;
+use windows_sys::Win32::Graphics::Gdi::{
+    DeleteObject, GetDC, GetDIBits, GetObjectW, ReleaseDC, BITMAP, BITMAPINFOHEADER, BI_RGB,
+    DIB_RGB_COLORS,
+};
+use windows_sys::Win32::System::Com::CoUninitialize;
 use windows_sys::Win32::UI::Shell::ExtractIconExW;
-use windows_sys::Win32::UI::WindowsAndMessaging::{DestroyIcon, GetIconInfo, ICONINFO};
+use windows_sys::Win32::UI::WindowsAndMessaging::{DestroyIcon, GetIconInfo, HICON};
 
 mod tests;
 
@@ -29,6 +31,90 @@ pub enum GetIconError {
     IconInfoConversionError,
     #[error("failed to save image")]
     ImageSaveError,
+}
+
+unsafe fn icon_to_image(icon: HICON) -> Result<RgbaImage, GetIconError> {
+    let mut icon_info = MaybeUninit::uninit();
+    if GetIconInfo(icon, icon_info.as_mut_ptr()) == 0 {
+        return Err(GetIconError::IconInfoError);
+    }
+    let icon_info = icon_info.assume_init();
+
+    DeleteObject(icon_info.hbmMask);
+
+    // rough way to get bitmap structure for icon
+    let bitmap_size_i32 = i32::try_from(mem::size_of::<BITMAP>()).unwrap();
+    let mut bitmap: MaybeUninit<BITMAP> = MaybeUninit::uninit();
+    let result = GetObjectW(
+        icon_info.hbmColor,
+        bitmap_size_i32,
+        bitmap.as_mut_ptr().cast(),
+    );
+    if result == 0 {
+        DeleteObject(icon_info.hbmColor);
+        return Err(GetIconError::IconInfoConversionError);
+    }
+    let bitmap = bitmap.assume_init();
+
+    let width_u32 = u32::try_from(bitmap.bmWidth).unwrap();
+    let height_u32 = u32::try_from(bitmap.bmHeight).unwrap();
+    let width_usize = usize::try_from(bitmap.bmWidth).unwrap();
+    let height_usize = usize::try_from(bitmap.bmHeight).unwrap();
+    let buf_size = width_usize
+        .checked_mul(height_usize)
+        .and_then(|size| size.checked_mul(4))
+        .unwrap();
+    let mut buf: Vec<u8> = Vec::with_capacity(buf_size);
+
+    // device context
+    let dc = GetDC(0);
+    if dc == 0 {
+        DeleteObject(icon_info.hbmColor);
+        return Err(GetIconError::IconInfoError);
+    }
+
+    let biheader_size_u32 = u32::try_from(mem::size_of::<BITMAPINFOHEADER>()).unwrap();
+    let mut bitmap_info = BITMAPINFOHEADER {
+        biSize: biheader_size_u32,
+        biWidth: bitmap.bmWidth,
+        // i'm using negative sign here to indicate that DIB should from top to bottom (i.e top down)
+        biHeight: -bitmap.bmHeight,
+        biPlanes: 1,
+        biBitCount: 32,
+        biCompression: BI_RGB,
+        biSizeImage: 0,
+        biXPelsPerMeter: 0,
+        biYPelsPerMeter: 0,
+        biClrUsed: 0,
+        biClrImportant: 0,
+    };
+
+    let result = GetDIBits(
+        dc,
+        icon_info.hbmColor,
+        0,
+        height_u32,
+        buf.as_mut_ptr().cast(),
+        addr_of_mut!(bitmap_info).cast(),
+        DIB_RGB_COLORS,
+    );
+    if result == 0 {
+        DeleteObject(icon_info.hbmColor);
+        ReleaseDC(0, dc);
+        return Err(GetIconError::IconInfoConversionError);
+    }
+    buf.set_len(buf.capacity());
+
+    ReleaseDC(0, dc);
+    DeleteObject(icon_info.hbmColor);
+
+    // swap the red and blue channels
+    for chunk in buf.chunks_exact_mut(4) {
+        let [b, _, r, _] = chunk else { unreachable!() };
+        mem::swap(b, r);
+    }
+
+    RgbaImage::from_vec(width_u32, height_u32, buf).ok_or(GetIconError::ImageSaveError)
 }
 
 pub fn get_icon(app_path: &Path, save_path: &Path, _icon_size: f64) -> Result<(), GetIconError> {
@@ -52,140 +138,21 @@ pub fn get_icon(app_path: &Path, save_path: &Path, _icon_size: f64) -> Result<()
     unsafe {
         let count = ExtractIconExW(path.as_ptr(), 0, &mut large_icon, &mut small_icon, 1);
         if count == 0 {
+            CoUninitialize();
             return Err(GetIconError::IconExtractionError);
         }
 
-        let mut icon_info: ICONINFO = std::mem::zeroed();
-        if GetIconInfo(large_icon, &mut icon_info) == 0 {
+        let image = icon_to_image(large_icon).map_err(|e| {
             DestroyIcon(large_icon);
-            return Err(GetIconError::IconInfoError);
-        }
+            CoUninitialize();
+            e
+        })?;
 
-        let mut bitmap: BITMAP = std::mem::zeroed();
-        if GetObjectW(
-            icon_info.hbmColor as _,
-            std::mem::size_of::<BITMAP>() as i32,
-            &mut bitmap as *mut _ as *mut _,
-        ) == 0
-        {
-            DestroyIcon(large_icon);
-            return Err(GetIconError::IconInfoConversionError);
-        }
-
-        // Create a DIB section
-        let hdc: HDC = 0;
-        let bmi = BITMAPINFO {
-            bmiHeader: BITMAPINFOHEADER {
-                biSize: std::mem::size_of::<BITMAPINFOHEADER>() as u32,
-                biWidth: bitmap.bmWidth,
-                biHeight: -bitmap.bmHeight, // Negative to indicate a top-down DIB
-                biPlanes: 1,
-                biBitCount: 32,
-                biCompression: 0,
-                biSizeImage: 0,
-                biXPelsPerMeter: 0,
-                biYPelsPerMeter: 0,
-                biClrUsed: 0,
-                biClrImportant: 0,
-            },
-            bmiColors: [RGBQUAD {
-                rgbBlue: 0,
-                rgbGreen: 0,
-                rgbRed: 0,
-                rgbReserved: 0,
-            }; 1],
-        };
-
-        let pixels: Vec<u8> = vec![0; (bitmap.bmWidth * bitmap.bmHeight * 4) as usize];
-        let hbm = CreateDIBSection(
-            hdc,
-            &bmi as *const _ as *const _,
-            DIB_RGB_COLORS,
-            &mut null_mut(),
-            0,
-            0,
-        );
-
-        if hbm == 0
-            || GetObjectW(
-                hbm as _,
-                std::mem::size_of::<BITMAP>() as i32,
-                &mut bitmap as *mut _ as *mut _,
-            ) == 0
-        {
-            DestroyIcon(large_icon);
-            return Err(GetIconError::IconInfoConversionError);
-        }
-
-        // Save the bitmap to file
-        let file = File::create(save_path).map_err(|_| GetIconError::ImageSaveError)?;
-        let mut writer = std::io::BufWriter::new(file);
-
-        // BITMAPFILEHEADER
-        writer
-            .write_all(&[
-                0x42,
-                0x4D, // 'BM'
-                (bitmap.bmWidth * bitmap.bmHeight * 4 + 54) as u8,
-                ((bitmap.bmWidth * bitmap.bmHeight * 4 + 54) >> 8) as u8,
-                ((bitmap.bmWidth * bitmap.bmHeight * 4 + 54) >> 16) as u8,
-                ((bitmap.bmWidth * bitmap.bmHeight * 4 + 54) >> 24) as u8,
-                0,
-                0,
-                0,
-                0,
-                54,
-                0,
-                0,
-                0,
-            ])
-            .map_err(|_| GetIconError::ImageSaveError)?;
-
-        // BITMAPINFOHEADER
-        writer
-            .write_all(&[
-                40,
-                0,
-                0,
-                0,
-                (bitmap.bmWidth) as u8,
-                ((bitmap.bmWidth) >> 8) as u8,
-                ((bitmap.bmWidth) >> 16) as u8,
-                ((bitmap.bmWidth) >> 24) as u8,
-                (bitmap.bmHeight) as u8,
-                ((bitmap.bmHeight) >> 8) as u8,
-                ((bitmap.bmHeight) >> 16) as u8,
-                ((bitmap.bmHeight) >> 24) as u8,
-                1,
-                0,
-                32,
-                0,
-                0,
-                0,
-                0,
-                0,
-                (bitmap.bmWidth * bitmap.bmHeight * 4) as u8,
-                ((bitmap.bmWidth * bitmap.bmHeight * 4) >> 8) as u8,
-                ((bitmap.bmWidth * bitmap.bmHeight * 4) >> 16) as u8,
-                ((bitmap.bmWidth * bitmap.bmHeight * 4) >> 24) as u8,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            ])
-            .map_err(|_| GetIconError::ImageSaveError)?;
-
-        // Write the pixels
-        writer
-            .write_all(&pixels)
-            .map_err(|_| GetIconError::ImageSaveError)?;
-
-        // Clean up
         DestroyIcon(large_icon);
+        image
+            .save(save_path)
+            .map_err(|_| GetIconError::ImageSaveError)?;
+        CoUninitialize();
     }
 
     Ok(())
