@@ -1,3 +1,4 @@
+use std::num::TryFromIntError;
 use std::os::windows::ffi::OsStrExt;
 use std::path::Path;
 use std::{
@@ -31,6 +32,8 @@ pub enum GetIconError {
     IconInfoConversionError,
     #[error("failed to save image")]
     ImageSaveError,
+    #[error("Failed to convert one of the bitmap data to valid integer: {0}")]
+    BitmapConversionError(#[from] TryFromIntError),
 }
 
 unsafe fn icon_to_image(icon: HICON) -> Result<RgbaImage, GetIconError> {
@@ -43,7 +46,7 @@ unsafe fn icon_to_image(icon: HICON) -> Result<RgbaImage, GetIconError> {
     DeleteObject(icon_info.hbmMask);
 
     // rough way to get bitmap structure for icon
-    let bitmap_size_i32 = i32::try_from(mem::size_of::<BITMAP>()).unwrap();
+    let bitmap_size_i32 = i32::try_from(mem::size_of::<BITMAP>())?;
     let mut bitmap: MaybeUninit<BITMAP> = MaybeUninit::uninit();
     let result = GetObjectW(
         icon_info.hbmColor,
@@ -56,14 +59,14 @@ unsafe fn icon_to_image(icon: HICON) -> Result<RgbaImage, GetIconError> {
     }
     let bitmap = bitmap.assume_init();
 
-    let width_u32 = u32::try_from(bitmap.bmWidth).unwrap();
-    let height_u32 = u32::try_from(bitmap.bmHeight).unwrap();
-    let width_usize = usize::try_from(bitmap.bmWidth).unwrap();
-    let height_usize = usize::try_from(bitmap.bmHeight).unwrap();
+    let width_u32 = u32::try_from(bitmap.bmWidth)?;
+    let height_u32 = u32::try_from(bitmap.bmHeight)?;
+    let width_usize = usize::try_from(bitmap.bmWidth)?;
+    let height_usize = usize::try_from(bitmap.bmHeight)?;
     let buf_size = width_usize
         .checked_mul(height_usize)
         .and_then(|size| size.checked_mul(4))
-        .unwrap();
+        .ok_or(GetIconError::IconInfoConversionError)?;
     let mut buf: Vec<u8> = Vec::with_capacity(buf_size);
 
     // device context
@@ -73,7 +76,7 @@ unsafe fn icon_to_image(icon: HICON) -> Result<RgbaImage, GetIconError> {
         return Err(GetIconError::IconInfoError);
     }
 
-    let biheader_size_u32 = u32::try_from(mem::size_of::<BITMAPINFOHEADER>()).unwrap();
+    let biheader_size_u32 = u32::try_from(mem::size_of::<BITMAPINFOHEADER>())?;
     let mut bitmap_info = BITMAPINFOHEADER {
         biSize: biheader_size_u32,
         biWidth: bitmap.bmWidth,
