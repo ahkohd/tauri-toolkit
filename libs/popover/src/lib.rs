@@ -30,9 +30,8 @@ pub fn add_view(window: &tauri::Window, options: Option<PopoverConfig>) {
 
     let win = window.clone();
 
-    let handle = win.app_handle();
-
-    handle
+    window
+        .app_handle()
         .run_on_main_thread(move || {
             let handle: id = win.ns_window().unwrap() as _;
 
