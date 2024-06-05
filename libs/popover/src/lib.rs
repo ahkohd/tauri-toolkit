@@ -5,17 +5,17 @@ mod macos;
 use crate::macos::popover::PopoverConfig;
 
 #[cfg(target_os = "windows")]
-pub fn add_view(window: &tauri::Window) {
+pub fn add_view(window: &tauri::WebviewWindow) {
     unimplemented!();
 }
 
 #[cfg(target_os = "linux")]
-pub fn add_view(window: &tauri::Window) {
+pub fn add_view(window: &tauri::WebviewWindow) {
     unimplemented!();
 }
 
 #[cfg(target_os = "macos")]
-pub fn add_view(window: &tauri::Window, options: Option<PopoverConfig>) {
+pub fn add_view(window: &tauri::WebviewWindow, options: Option<PopoverConfig>) {
     use cocoa::{
         base::id,
         foundation::{NSInteger, NSPoint, NSRect, NSSize},
