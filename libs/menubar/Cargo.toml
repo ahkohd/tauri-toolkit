@@ -17,5 +17,3 @@ tauri.workspace = true
 serde.workspace = true
 cocoa.workspace = true
 objc.workspace = true
-core-foundation.workspace = true
-core-graphics.workspace = true
