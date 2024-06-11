@@ -28,8 +28,8 @@ fn main() {
 
 ## Functions
 
-- `get_menubar() -> Option<Menubar>`:
-  Returns the menubar info of the current monitor.
+- `get_menubar() -> Menubar`:
+  Get info about the system-wide Menubar.
 
 
 ### Menubar
@@ -38,12 +38,10 @@ The struct Menubar provides properties are defined as follows:
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Menubar {
     height: f64,
-    scale_factor: f64,
 }
 ```
 It includes the following fields:
 - `height`: the height of the menubar
-- `scale_factor`: the scaling factor of the monitor's resolution
 
 #### Menubar Methods
 
@@ -51,15 +49,11 @@ It includes the following fields:
 
 - `height(&self) -> f64`: This method returns the height.
 
-- `scale_factor(&self) -> f64`: This method returns the scale factor of the monitor.
-
-
 To use any of these methods, you need to have an instance of a `Menubar`.
 
 For example: 
 ```rust
 let menubar_height = menubar.height(); 
-let menubar_scale_factor = menubar.scale_factor();
 ```
 
 ## Contributing
