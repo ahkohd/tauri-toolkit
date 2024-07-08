@@ -1,5 +1,5 @@
 #[cfg(target_os = "macos")]
-mod macos;
+pub mod macos;
 
 #[cfg(target_os = "macos")]
 use crate::macos::popover::PopoverConfig;
