@@ -234,6 +234,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "border"
+version = "0.1.0"
+dependencies = [
+ "cocoa",
+ "objc",
+ "objc-foundation",
+ "objc_id",
+ "serde",
+ "tauri",
+ "thiserror",
+]
+
+[[package]]
 name = "brotli"
 version = "3.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
