@@ -242,9 +242,7 @@ dependencies = [
  "objc",
  "objc-foundation",
  "objc_id",
- "serde",
  "tauri",
- "thiserror",
 ]
 
 [[package]]
@@ -473,7 +471,6 @@ version = "0.1.0"
 dependencies = [
  "cocoa",
  "tauri",
- "thiserror",
 ]
 
 [[package]]

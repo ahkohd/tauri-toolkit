@@ -9,12 +9,8 @@ rust-version.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
-thiserror.workspace = true
-
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri.workspace = true
-serde.workspace = true
 cocoa.workspace = true
 objc.workspace = true
 objc-foundation.workspace = true
