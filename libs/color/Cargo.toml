@@ -1,7 +1,7 @@
 [package]
-name = "border"
+name = "color"
 version = "0.1.0"
-description = "A library to add border around your window"
+description = "color utils"
 authors.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -14,9 +14,4 @@ thiserror.workspace = true
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri.workspace = true
-serde.workspace = true
 cocoa.workspace = true
-objc.workspace = true
-objc-foundation.workspace = true
-objc_id.workspace = true
-color.workspace = true

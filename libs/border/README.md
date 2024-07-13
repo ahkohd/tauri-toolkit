@@ -52,26 +52,24 @@ fn main() {
 
     // For example, update the border color
 
-    use cocoa::{appkit::NSColor};
+    use tauri::Color;
 
-    let red_color = unsafe { NSColor::colorWithSRGBRed_green_blue_alpha_(nil, 1.0, 0.0, 0.0, 1.0) };
-
-    border.set_line_color(red_color);
+    border.set_line_color(Color(255, 0, 0, 255));
 }
 ```
 
 With your config:
 
 ```rust
+use tauri::Color;
 use border::{BorderConfig, WebviewWindowExt as BorderWebviewWindowExt};
-use cocoa::{appkit::NSColor};
 
 fn main() {
     let window = app_handle.get_webview_window("window_name");
 
     window.add_border(Some(BorderConfig {
          line_width: 1.0,
-         line_color: unsafe { NSColor::colorWithSRGBRed_green_blue_alpha_(nil, 1.0, 0.0, 0.0, 1.0) },
+         line_color: Color(255, 0, 0, 255),
          inset: 0.5,
          corner_radius: 10.0,
     }));
@@ -82,7 +80,7 @@ fn main() {
 Here is the description of the fields in this struct:
 
 - `line_width`: _CGFloat_ representing the thickness of the border.
-- `line_color`: _NSColor_ instance representing the color of the border.
+- `line_color`: _Color_ representing the color of the border.
 - `inset`: _CGFloat_ defining the inset between the border and the window frame.
 - `corner_radius`: _CGFloat_ defining the corner radius of the border.
 
@@ -98,7 +96,7 @@ The `WebviewWindowExt` trait from the `border` crate when in scope adds the foll
 The view that adds border around the `WebviewWindow`.
 
 ### Functions
-- `set_line_color(&self, ns_color: id)`:
+- `set_line_color(&self, color: Color)`:
   Update the border's line color.
 - `set_line_width(&self, width: CGFloat)`:
   Update the border line width.

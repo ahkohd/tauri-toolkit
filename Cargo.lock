@@ -238,6 +238,7 @@ name = "border"
 version = "0.1.0"
 dependencies = [
  "cocoa",
+ "color",
  "objc",
  "objc-foundation",
  "objc_id",
@@ -464,6 +465,15 @@ dependencies = [
  "core-graphics-types",
  "libc",
  "objc",
+]
+
+[[package]]
+name = "color"
+version = "0.1.0"
+dependencies = [
+ "cocoa",
+ "tauri",
+ "thiserror",
 ]
 
 [[package]]

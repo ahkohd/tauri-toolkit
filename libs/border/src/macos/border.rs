@@ -12,6 +12,9 @@ use objc::{
 };
 use objc_foundation::INSObject;
 use objc_id::{Id, ShareId};
+use tauri::window::Color;
+
+use color::ColorExt;
 
 use crate::macos::tag;
 
@@ -25,20 +28,16 @@ unsafe impl Send for BorderView {}
 
 pub struct BorderViewConfig {
     pub line_width: CGFloat,
-    pub line_color: id,
+    pub line_color: Color,
     pub inset: CGFloat,
     pub corner_radius: CGFloat,
 }
 
 impl Default for BorderViewConfig {
     fn default() -> Self {
-        let line_color: id = unsafe { msg_send![class!(NSColor), whiteColor] };
-
-        let line_color: id = unsafe { msg_send![line_color, colorWithAlphaComponent: 0.15] };
-
         BorderViewConfig {
             line_width: 1.0,
-            line_color,
+            line_color: Color(255, 255, 255, 38),
             inset: 0.5,
             corner_radius: 10.0,
         }
@@ -168,7 +167,7 @@ impl BorderView {
 
         let () = unsafe { msg_send![border_view, setLineWidth: config.line_width] };
 
-        let () = unsafe { msg_send![border_view, setLineColor: config.line_color] };
+        let () = unsafe { msg_send![border_view, setLineColor: config.line_color.to_ns_color()] };
 
         let () = unsafe { msg_send![border_view, setInset: config.inset] };
 
@@ -203,8 +202,8 @@ impl BorderView {
     }
 
     #[allow(dead_code)]
-    pub fn set_line_color(&self, color: id) {
-        let () = unsafe { msg_send![self, setLineColor: color] };
+    pub fn set_line_color(&self, color: Color) {
+        let () = unsafe { msg_send![self, setLineColor: color.to_ns_color()] };
     }
 
     #[allow(dead_code)]
