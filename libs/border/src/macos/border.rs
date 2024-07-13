@@ -28,7 +28,6 @@ pub struct BorderViewConfig {
     pub line_color: id,
     pub inset: CGFloat,
     pub corner_radius: CGFloat,
-    pub tag: String,
 }
 
 impl Default for BorderViewConfig {
@@ -42,7 +41,6 @@ impl Default for BorderViewConfig {
             line_color,
             inset: 0.5,
             corner_radius: 10.0,
-            tag: "border-view".to_string(),
         }
     }
 }
@@ -161,7 +159,7 @@ impl BorderView {
         let () = unsafe { msg_send![rounded_rect, stroke] };
     }
 
-    pub fn new(config: Option<BorderViewConfig>) -> ShareId<BorderView> {
+    pub fn new(config: Option<BorderViewConfig>, tag: String) -> ShareId<BorderView> {
         let config = config.unwrap_or_default();
 
         let border_view: id = unsafe { msg_send![Self::class(), alloc] };
@@ -176,7 +174,7 @@ impl BorderView {
 
         let () = unsafe { msg_send![border_view, setCornerRadius: config.corner_radius] };
 
-        let () = unsafe { msg_send![border_view, setTag: tag::from_str(&config.tag)] };
+        let () = unsafe { msg_send![border_view, setTag: tag::from_str(&tag)] };
 
         let border_view = unsafe { Id::from_retained_ptr(border_view as *mut BorderView) };
 

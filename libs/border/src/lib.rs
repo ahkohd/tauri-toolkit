@@ -13,6 +13,7 @@ use macos::border::{BorderView, BorderViewConfig};
 #[cfg(target_os = "macos")]
 use objc::{msg_send, sel, sel_impl};
 
+use objc_id::ShareId;
 use tauri::{Runtime, WebviewWindow};
 
 #[cfg(target_os = "macos")]
@@ -24,6 +25,8 @@ pub type BorderConfig = macos::border::BorderViewConfig;
 #[cfg(target_os = "macos")]
 pub trait WebviewWindowExt {
     fn add_border(&self, config: Option<BorderViewConfig>);
+
+    fn border(&self) -> Option<ShareId<BorderView>>;
 }
 
 #[cfg(target_os = "macos")]
@@ -35,7 +38,7 @@ impl<R: Runtime> WebviewWindowExt for WebviewWindow<R> {
 
         let content_view: id = unsafe { msg_send![handle, contentView] };
 
-        let view = BorderView::new(config);
+        let view = BorderView::new(config, self.label().to_string());
 
         let frame = NSRect::new(
             NSPoint::new(0.0, 0.0),
@@ -47,5 +50,13 @@ impl<R: Runtime> WebviewWindowExt for WebviewWindow<R> {
         view.set_parent(content_view);
 
         view.set_autoresizing();
+    }
+
+    fn border(&self) -> Option<ShareId<BorderView>> {
+        let handle: id = self.ns_window().unwrap() as _;
+
+        let content_view: id = unsafe { msg_send![handle, contentView] };
+
+        BorderView::find_with_tag(content_view, self.label().to_string())
     }
 }
