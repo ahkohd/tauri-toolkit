@@ -13,6 +13,7 @@ use macos::border::{BorderView, BorderViewConfig};
 #[cfg(target_os = "macos")]
 use objc::{msg_send, sel, sel_impl};
 
+#[cfg(target_os = "macos")]
 use objc_id::ShareId;
 use tauri::{Runtime, WebviewWindow};
 
