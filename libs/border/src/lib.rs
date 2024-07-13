@@ -50,7 +50,7 @@ impl<R: Runtime> WebviewWindowExt for WebviewWindow<R> {
 
         view.set_parent(content_view);
 
-        view.set_autoresizing();
+        view.set_auto_resizing();
     }
 
     fn border(&self) -> Option<ShareId<BorderView>> {

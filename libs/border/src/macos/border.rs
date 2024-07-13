@@ -191,7 +191,7 @@ impl BorderView {
         }
     }
 
-    pub fn set_autoresizing(&self) {
+    pub fn set_auto_resizing(&self) {
         let autoresizing_mask = NSViewWidthSizable | NSViewHeightSizable;
 
         let _: () = unsafe { msg_send![self, setAutoresizingMask: autoresizing_mask] };
