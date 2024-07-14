@@ -1,4 +1,4 @@
-A border around `WebviewWindow`.
+Add border around `WebviewWindow`.
 
 ### Install
 _This lib requires a Rust version of at least **1.64**_
@@ -112,7 +112,7 @@ You probably will not need to use the following methods, _they are used internal
   Update the parent of the border view.
 - `set_auto_resizing(&self)`:
   Make the border view auto-resize along with the window's frame.
-  _For convince, by default this is already called during the setup for the border view when you use the `window.add_border` API._
+  _For convince, by default this is already called during the setup of the border view when you use the `window.add_border` API._
 
 
 ## Contributing
