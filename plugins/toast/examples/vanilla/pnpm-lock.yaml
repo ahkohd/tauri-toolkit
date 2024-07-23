@@ -17,7 +17,7 @@ importers:
         version: 1.6.0
       typescript:
         specifier: ^5.0.2
-        version: 5.5.3
+        version: 5.5.4
       vite:
         specifier: ^5.0.0
         version: 5.3.4
@@ -345,8 +345,8 @@ packages:
     resolution: {integrity: sha512-itJW8lvSA0TXEphiRoawsCksnlf8SyvmFzIhltqAHluXd88pkCd+cXJVHTDwdCr0IzwptSm035IHQktUu1QUMg==}
     engines: {node: '>=0.10.0'}
 
-  typescript@5.5.3:
-    resolution: {integrity: sha512-/hreyEujaB0w76zKo6717l3L0o/qEUtRgdvUBvlkhoWeOVMjMuHNHk0BRBzikzuGDqNmPQbg5ifMEqsHLiIUcQ==}
+  typescript@5.5.4:
+    resolution: {integrity: sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -607,7 +607,7 @@ snapshots:
 
   source-map-js@1.2.0: {}
 
-  typescript@5.5.3: {}
+  typescript@5.5.4: {}
 
   vite@5.3.4:
     dependencies:
