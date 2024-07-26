@@ -3648,6 +3648,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "system-notification"
+version = "0.1.0"
+dependencies = [
+ "block",
+ "cocoa",
+ "objc",
+ "tauri",
+]
+
+[[package]]
 name = "tao"
 version = "0.28.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
