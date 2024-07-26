@@ -18,6 +18,7 @@ objc_id = { version = "0.1.1" }
 objc-foundation = { version = "0.1.1" }
 objc2-foundation = { version = "0.2.0", features = ["NSGeometry"] }
 objc2-app-kit = { version = "0.2.0", features = ["NSBezierPath"] }
+block = "0.1.6"
 
 windows-sys = { version = "0.52.0", features = [
     "Win32_UI",
