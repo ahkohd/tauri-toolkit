@@ -6,5 +6,6 @@
 | [monitor](libs/monitor)     | Get information about monitors.                    | ?  | ✅ | ?  | ?   | ?   |
 | [menubar](libs/menubar)     | Get information about menubar.                    | ?  | ✅ | ?  | ?   | ?   |
 | [popover](libs/popover)     | Add popover view to `WebviewWindow`.                    | ?  | ✅ | ?  | ?   | ?   |
+| [system-notification](libs/system-notification)     | Listen to System or Workspace notification.                    | ?  | ✅ | ?  | ?   | ?   |
 
 _This repo and all plugins require a Rust version of at least __1.64___
