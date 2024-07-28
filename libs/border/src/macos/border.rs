@@ -167,7 +167,7 @@ impl BorderView {
 
         let () = unsafe { msg_send![border_view, setLineWidth: config.line_width] };
 
-        let () = unsafe { msg_send![border_view, setLineColor: config.line_color.to_ns_color()] };
+        let () = unsafe { msg_send![border_view, setLineColor: config.line_color.to_nscolor()] };
 
         let () = unsafe { msg_send![border_view, setInset: config.inset] };
 
@@ -203,7 +203,7 @@ impl BorderView {
 
     #[allow(dead_code)]
     pub fn set_line_color(&self, color: Color) {
-        let () = unsafe { msg_send![self, setLineColor: color.to_ns_color()] };
+        let () = unsafe { msg_send![self, setLineColor: color.to_nscolor()] };
     }
 
     #[allow(dead_code)]
