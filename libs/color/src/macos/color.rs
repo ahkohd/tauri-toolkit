@@ -4,6 +4,7 @@ use cocoa::{
     appkit::{CGFloat, NSColor},
     base::{id, nil},
 };
+use objc::{class, msg_send, sel, sel_impl};
 use tauri::window::Color;
 
 pub trait ColorExt {
@@ -39,6 +40,10 @@ impl ColorExt for Color {
     }
 
     unsafe fn from_nscolor(color: id) -> Self {
+        let color_space: id = unsafe { msg_send![class!(NSColorSpace), sRGBColorSpace] };
+
+        let color: id = color.colorUsingColorSpace_(color_space);
+
         unsafe {
             Self(
                 (color.redComponent() * 255.0) as u8,

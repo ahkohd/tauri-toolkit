@@ -12,3 +12,4 @@ rust-version.workspace = true
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri.workspace = true
 cocoa.workspace = true
+objc.workspace = true
