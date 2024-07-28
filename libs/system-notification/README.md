@@ -25,11 +25,13 @@ use system_notification::WorkspaceListener;
 fn main() {
     // ...
 
+    // listen to a workspace notification
     app_handle.listen_workspace("NSWorkspaceDidActivateApplicationNotification", |app_handle| {
        // An app was activated, do something here...
     });
 
-    app_handle.listen_workspace("NSSystemColorsDidChangeNotification", |app_handle| {
+    // listen to a notification sent by the system to the application
+    app_handle.listen_notification("NSSystemColorsDidChangeNotification", |app_handle| {
        // System colors have changed, do something here...
     });
 
@@ -42,6 +44,9 @@ The `WorkspaceListener` trait from the `system-notification` crate when in scope
 
 - `listen_workspace(&str, notification_name: &str, callback: fn(AppHandle<R: Runtime>))`:
   Listen to a workspace notification.
+
+- `listen_notification(&str, notification_name: &str, callback: fn(AppHandle<R: Runtime>))`:
+  Listen to a system notification sent to the application's default notification center.
 
   **Prameters:**
   - `notification_name` _&str_ The notification name. See https://developer.apple.com/documentation/foundation/nsnotificationname for an exhaustive list of notification names.
