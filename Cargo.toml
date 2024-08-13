@@ -11,7 +11,7 @@ thiserror = "1"
 
 cocoa = "0.25.0"
 objc = "0.2.7"
-core-foundation = "0.9.4"
+core-foundation = "0.10.0"
 core-graphics = "0.23.2"
 objc_id = { version = "0.1.1" }
 objc-foundation = { version = "0.1.1" }
