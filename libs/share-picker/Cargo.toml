@@ -1,0 +1,19 @@
+[package]
+name = "share-picker"
+version = "0.1.0"
+description = "A library to show the Share picker"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[dependencies]
+tauri.workspace = true
+
+[target."cfg(target_os = \"macos\")".dependencies]
+objc2.workspace = true
+objc2-app-kit.workspace = true
+objc2-foundation.workspace = true
