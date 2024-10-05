@@ -18,7 +18,7 @@ share-picker = { git = "https://github.com/ahkohd/tauri-toolkit", branch = "v2" 
 ```
 
 ### Demo
-<img width="515" alt="image" src="https://github.com/ahkohd/tauri-macos-menubar-app-example/assets/13041443/68cf6e28-5dff-45c1-8fc6-78386839234d">
+![A demo of the share picker](../../../assets/share-picker.gif)
 
 ## Usage
 ```rust
