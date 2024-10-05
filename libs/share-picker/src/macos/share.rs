@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 
 use objc2::{msg_send_id, rc::Retained, ClassType};
-use objc2_app_kit::{NSEvent, NSSharingServicePicker, NSView, NSWindow};
+use objc2_app_kit::{NSSharingServicePicker, NSView, NSWindow};
 use objc2_foundation::{
     MainThreadMarker, NSArray, NSPoint, NSRect, NSRectEdge, NSSize, NSString, NSURL,
 };
-use tauri::{Runtime, WebviewWindow};
+use tauri::{PhysicalPosition, Runtime, WebviewWindow};
 
 pub enum PreferredEdge {
     TopLeft,
@@ -26,14 +26,19 @@ impl PreferredEdge {
 }
 
 pub trait SharePicker<R: Runtime> {
-    fn share(&self, items: Vec<PathBuf>, offset: Option<(f64, f64)>, preferred_edge: PreferredEdge);
+    fn share(
+        &self,
+        items: Vec<PathBuf>,
+        position: PhysicalPosition<f64>,
+        preferred_edge: PreferredEdge,
+    );
 }
 
 impl<R: Runtime> SharePicker<R> for WebviewWindow<R> {
     fn share(
         &self,
         items: Vec<PathBuf>,
-        offset: Option<(f64, f64)>,
+        position: PhysicalPosition<f64>,
         preferred_edge: PreferredEdge,
     ) {
         let items = items
@@ -58,29 +63,23 @@ impl<R: Runtime> SharePicker<R> for WebviewWindow<R> {
 
         let content_view = window.contentView().unwrap();
 
-        let mouse_location_in_screen = unsafe { NSEvent::mouseLocation() };
+        let scale_factor = self.scale_factor().unwrap();
 
-        let mouse_location_in_window = window.convertPointFromScreen(mouse_location_in_screen);
+        let position = PhysicalPosition {
+            x: position.x,
+            y: window.frame().size.height - position.y,
+        };
 
-        let mouse_location_in_content_view =
-            content_view.convertPoint_fromView(mouse_location_in_window, None);
+        let point_in_window = NSPoint::new(position.x, position.y);
+
+        let point_in_content_view = content_view.convertPoint_fromView(point_in_window, None);
 
         let mtm = MainThreadMarker::new().unwrap();
 
         let view = unsafe { NSView::new(mtm) };
 
         unsafe {
-            view.setFrame(NSRect::new(
-                if let Some((x, y)) = offset {
-                    NSPoint::new(
-                        mouse_location_in_content_view.x + x,
-                        mouse_location_in_content_view.y + y,
-                    )
-                } else {
-                    mouse_location_in_content_view
-                },
-                NSSize::new(1.0, 1.0),
-            ));
+            view.setFrame(NSRect::new(point_in_content_view, NSSize::new(1.0, 1.0)));
 
             content_view.addSubview(&view);
         }
