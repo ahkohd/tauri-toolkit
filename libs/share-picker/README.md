@@ -1,4 +1,4 @@
-Show the Share picker `WebviewWindow`.
+Show the Share picker over a `WebviewWindow`.
 
 ### Install
 _This lib requires a Rust version of at least **1.64**_
@@ -27,7 +27,7 @@ use share_picker::{SharePicker, PreferredEdge};
 fn main() {
     let window = app_handle.get_webview_window("window_name");
 
-    let item = Path::from("/foo/bar.pdf")
+    let item = Path::from("/foo/bar.pdf");
 
     window.share(vec![item.to_path_buf()], None, PreferredEdge::BottomLeft);
 }
@@ -36,10 +36,10 @@ fn main() {
 ## Functions
 
 - `share(window: &tauri::WebviewWindow, items: Vec<PathBuf>, offset: Option<(f64, f64)>, preferred_edge: PreferredEdge)`:
-  Shows the Share picker at the cursor position in a `WebviewWindow`. 
-  - `items: Vec<PathBuf>`: A list of path to items so share.
-  - `offset: Option<(f64, f64)>`: Offset the position the share picker will be displayed relative to the cursor position.
-  - `preferred_edge: PreferredEdge`: The preferred edge to show the share picker at the rect of the cursor position.
+  Displays the Share picker at the cursor position within a WebviewWindow. 
+  - `items: Vec<PathBuf>`: A list of paths to items to share.
+  - `offset: Option<(f64, f64)>`: Adjust the position of the share picker relative to the cursor.
+  - `preferred_edge: PreferredEdge`: The preferred edge for displaying the share picker at the cursor position's rectangle.
 
 
 ## PreferredEdge Enum
