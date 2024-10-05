@@ -84,7 +84,7 @@ pub fn get_monitor_with_cursor() -> Option<Monitor> {
 
     #[cfg(target_os = "macos")]
     {
-        return macos::monitor::get_monitor_with_cursor();
+        macos::monitor::get_monitor_with_cursor()
     }
 }
 
@@ -101,6 +101,6 @@ pub fn get_monitors() -> Vec<Monitor> {
 
     #[cfg(target_os = "macos")]
     {
-        return macos::monitor::get_monitors();
+        macos::monitor::get_monitors()
     }
 }
