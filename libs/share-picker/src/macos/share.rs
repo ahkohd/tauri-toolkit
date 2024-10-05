@@ -63,8 +63,6 @@ impl<R: Runtime> SharePicker<R> for WebviewWindow<R> {
 
         let content_view = window.contentView().unwrap();
 
-        let scale_factor = self.scale_factor().unwrap();
-
         let position = PhysicalPosition {
             x: position.x,
             y: window.frame().size.height - position.y,

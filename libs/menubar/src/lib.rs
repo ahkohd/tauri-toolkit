@@ -39,6 +39,6 @@ pub fn get_menubar() -> Menubar {
 
     #[cfg(target_os = "macos")]
     {
-        return Menubar::default();
+        Menubar::default()
     }
 }

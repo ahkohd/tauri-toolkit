@@ -393,9 +393,7 @@ impl PopoverView {
 
         let () = unsafe { msg_send![popover_view, setRightEdgeMargin: config.right_edge_margin ] };
 
-        let popover_view = unsafe { Id::from_retained_ptr(popover_view as *mut PopoverView) };
-
-        popover_view
+        unsafe { Id::from_retained_ptr(popover_view as *mut PopoverView) }
     }
 
     pub fn set_frame(&self, frame: NSRect) {

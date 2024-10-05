@@ -18,7 +18,7 @@ use color::ColorExt;
 
 use crate::macos::tag;
 
-static CLS_NAME: &'static str = "BorderView";
+static CLS_NAME: &str = "BorderView";
 
 pub struct BorderView;
 
@@ -175,9 +175,7 @@ impl BorderView {
 
         let () = unsafe { msg_send![border_view, setTag: tag::from_str(&tag)] };
 
-        let border_view = unsafe { Id::from_retained_ptr(border_view as *mut BorderView) };
-
-        border_view
+        unsafe { Id::from_retained_ptr(border_view as *mut BorderView) }
     }
 
     pub fn set_parent(&self, parent_view: id) {
