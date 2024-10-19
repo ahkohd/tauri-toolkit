@@ -1,6 +1,6 @@
 use cocoa::{
     appkit::{CGFloat, NSViewHeightSizable, NSViewWidthSizable},
-    base::id,
+    base::{id, BOOL},
     foundation::{NSInteger, NSPoint, NSRect, NSSize},
 };
 use objc::{
@@ -57,6 +57,8 @@ impl BorderView {
 
         decl.add_ivar::<CGFloat>("corner_radius");
 
+        decl.add_ivar::<BOOL>("accepts_first_mouse");
+
         decl.add_ivar::<NSInteger>("_tag");
 
         unsafe {
@@ -81,6 +83,11 @@ impl BorderView {
             );
 
             decl.add_method(
+                sel!(setAcceptsFirstMouse:),
+                Self::handle_set_accepts_first_mouse as extern "C" fn(&mut Object, Sel, BOOL),
+            );
+
+            decl.add_method(
                 sel!(tag),
                 Self::handle_get_tag as extern "C" fn(&mut Object, Sel) -> NSInteger,
             );
@@ -93,6 +100,11 @@ impl BorderView {
             decl.add_method(
                 sel!(drawRect:),
                 Self::draw_rect as extern "C" fn(&Object, _, NSRect),
+            );
+
+            decl.add_method(
+                sel!(acceptsFirstMouse:),
+                Self::accepts_first_mouse as extern "C" fn(&Object, Sel, id) -> BOOL,
             );
         }
 
@@ -113,6 +125,10 @@ impl BorderView {
 
     extern "C" fn handle_set_corner_radius(this: &mut Object, _: Sel, radius: CGFloat) {
         unsafe { this.set_ivar::<CGFloat>("corner_radius", radius) };
+    }
+
+    extern "C" fn handle_set_accepts_first_mouse(this: &mut Object, _: Sel, value: bool) {
+        unsafe { this.set_ivar::<bool>("accepts_first_mouse", value) };
     }
 
     extern "C" fn handle_get_tag(this: &mut Object, _: Sel) -> NSInteger {
@@ -156,6 +172,10 @@ impl BorderView {
         let () = unsafe { msg_send![rounded_rect, setLineWidth: line_width] };
 
         let () = unsafe { msg_send![rounded_rect, stroke] };
+    }
+
+    extern "C" fn accepts_first_mouse(this: &Object, _: Sel, _: id) -> BOOL {
+        unsafe { *this.get_ivar::<BOOL>("accepts_first_mouse") }
     }
 
     pub fn new(config: Option<BorderViewConfig>, tag: String) -> ShareId<BorderView> {
@@ -217,6 +237,11 @@ impl BorderView {
         let layer: id = unsafe { msg_send![self, layer] };
 
         let () = unsafe { msg_send![layer, setCornerRadius: radius] };
+    }
+
+    #[allow(dead_code)]
+    pub fn set_accepts_first_mouse(&self, value: bool) {
+        let () = unsafe { msg_send![self, setAcceptsFirstMouse: value ] };
     }
 
     #[allow(dead_code)]
