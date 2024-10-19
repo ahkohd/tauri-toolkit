@@ -52,9 +52,13 @@ fn main() {
 
     // For example, update the border color
 
-    use tauri::Color;
+    use tauri::window::Color;
 
     border.set_line_color(Color(255, 0, 0, 255));
+
+    // Want to remove the border? 
+
+    border.remove();
 }
 ```
 

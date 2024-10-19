@@ -178,6 +178,7 @@ impl BorderView {
         unsafe { Id::from_retained_ptr(border_view as *mut BorderView) }
     }
 
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
     pub fn set_parent(&self, parent_view: id) {
         let () = unsafe { msg_send![parent_view, addSubview: self] };
     }
@@ -219,6 +220,7 @@ impl BorderView {
     }
 
     #[allow(dead_code)]
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
     pub fn find_with_tag(content_view: id, name: String) -> Option<ShareId<BorderView>> {
         let border_view: id = unsafe { msg_send![content_view, viewWithTag: tag::from_str(&name)] };
 
@@ -227,6 +229,10 @@ impl BorderView {
         } else {
             Some(unsafe { Id::from_ptr(border_view as *mut BorderView) })
         }
+    }
+
+    pub fn remove(&self) {
+        let () = unsafe { msg_send![self, removeFromSuperview] };
     }
 }
 
