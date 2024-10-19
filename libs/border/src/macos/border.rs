@@ -1,6 +1,6 @@
 use cocoa::{
     appkit::{CGFloat, NSViewHeightSizable, NSViewWidthSizable},
-    base::{id, BOOL},
+    base::{id, BOOL, NO, YES},
     foundation::{NSInteger, NSPoint, NSRect, NSSize},
 };
 use objc::{
@@ -127,8 +127,8 @@ impl BorderView {
         unsafe { this.set_ivar::<CGFloat>("corner_radius", radius) };
     }
 
-    extern "C" fn handle_set_accepts_first_mouse(this: &mut Object, _: Sel, value: bool) {
-        unsafe { this.set_ivar::<bool>("accepts_first_mouse", value) };
+    extern "C" fn handle_set_accepts_first_mouse(this: &mut Object, _: Sel, value: BOOL) {
+        unsafe { this.set_ivar::<BOOL>("accepts_first_mouse", value) };
     }
 
     extern "C" fn handle_get_tag(this: &mut Object, _: Sel) -> NSInteger {
@@ -241,7 +241,7 @@ impl BorderView {
 
     #[allow(dead_code)]
     pub fn set_accepts_first_mouse(&self, value: bool) {
-        let () = unsafe { msg_send![self, setAcceptsFirstMouse: value ] };
+        let () = unsafe { msg_send![self, setAcceptsFirstMouse: if value { YES } else { NO } ] };
     }
 
     #[allow(dead_code)]
