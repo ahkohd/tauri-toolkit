@@ -52,16 +52,20 @@ fn main() {
 
     // For example, update the border color
 
-    use tauri::Color;
+    use tauri::window::Color;
 
     border.set_line_color(Color(255, 0, 0, 255));
+
+    // Want to remove the border? 
+
+    border.remove();
 }
 ```
 
 With your config:
 
 ```rust
-use tauri::Color;
+use tauri::window::Color;
 use border::{BorderConfig, WebviewWindowExt as BorderWebviewWindowExt};
 
 fn main() {
@@ -104,6 +108,10 @@ The view that adds border around the `WebviewWindow`.
   Update the inset.
 - `set_corner_radius(&self, inset: CGFloat)`:
   Update the corner radius of the border.
+- `set_accepts_first_mouse(&self, value: bool)`:
+  Sets whether the border view should accept the first mouse click.
+- `remove(&self)`:
+  Remove the border view from the parent view.
 
 You probably will not need to use the following methods, _they are used internally to setup the border view_:
 - `set_frame(&self, frame: NSRect)`:
