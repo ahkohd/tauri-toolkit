@@ -13,8 +13,10 @@ cocoa = "0.26.0"
 objc = "0.2.7"
 core-foundation = "0.10.0"
 core-graphics = "0.24.0"
-objc_id = { version = "0.1.1" }
-objc-foundation = { version = "0.1.1" }
+objc_id = "0.1.1"
+objc-foundation = "0.1.1"
+objc2-core-foundation = "0.3.0"
+objc2-quartz-core = { version = "0.3.0", features = ["CALayer"] }
 objc2 = "0.6.0"
 objc2-foundation = { version = "0.3.0", features = [
   "NSGeometry",
@@ -25,6 +27,7 @@ objc2-foundation = { version = "0.3.0", features = [
 objc2-app-kit = { version = "0.3.0", features = [
   "block2",
   "objc2-quartz-core",
+  "objc2-core-foundation",
   "NSBezierPath",
   "NSSharingService",
   "NSResponder",

@@ -23,3 +23,6 @@ core-graphics.workspace = true
 objc-foundation.workspace = true
 objc2-foundation.workspace = true
 objc2-app-kit.workspace = true
+
+[features]
+cargo-clippy = []

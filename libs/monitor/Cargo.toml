@@ -19,3 +19,7 @@ cocoa.workspace = true
 objc.workspace = true
 core-foundation.workspace = true
 core-graphics.workspace = true
+
+
+[features]
+cargo-clippy = []

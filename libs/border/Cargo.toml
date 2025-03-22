@@ -16,3 +16,6 @@ objc.workspace = true
 objc-foundation.workspace = true
 objc_id.workspace = true
 color.workspace = true
+
+[features]
+cargo-clippy = []

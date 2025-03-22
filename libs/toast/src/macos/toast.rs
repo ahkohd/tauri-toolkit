@@ -8,119 +8,109 @@ use std::{
 use block2::RcBlock;
 use monitor::get_monitor_with_cursor;
 use objc2::{
-    declare_class, extern_methods, msg_send, mutability::MainThreadOnly, rc::Retained, sel,
-    ClassType, DeclaredClass,
+    define_class, extern_methods, msg_send, rc::Retained, AllocAnyThread, MainThreadOnly, Message,
 };
 use objc2_app_kit::{
     NSAnimatablePropertyContainer, NSAnimationContext, NSAutoresizingMaskOptions,
     NSBackingStoreType, NSColor, NSFloatingWindowLevel, NSLineBreakMode, NSMutableParagraphStyle,
-    NSPanel, NSResponder, NSTextField, NSVisualEffectBlendingMode, NSVisualEffectMaterial,
-    NSVisualEffectState, NSVisualEffectView, NSWindowCollectionBehavior, NSWindowOrderingMode,
-    NSWindowStyleMask,
+    NSPanel, NSTextField, NSVisualEffectBlendingMode, NSVisualEffectMaterial, NSVisualEffectState,
+    NSVisualEffectView, NSWindowCollectionBehavior, NSWindowOrderingMode, NSWindowStyleMask,
 };
 use objc2_foundation::{
-    CGSize, MainThreadMarker, NSAttributedString, NSAttributedStringKey, NSMutableAttributedString,
-    NSObject, NSObjectProtocol, NSPoint, NSRange, NSRect, NSSize, NSString, NSTimer,
+    MainThreadMarker, NSAttributedString, NSAttributedStringKey, NSMutableAttributedString,
+    NSObjectProtocol, NSPoint as CGPoint, NSRange, NSRect, NSSize as CGSize, NSString, NSTimer,
     NSUTF8StringEncoding,
 };
 use tauri::{AppHandle, Manager, Runtime};
 
-declare_class!(
-  struct NSToastPanel;
+#[derive(Clone)]
+struct Ivars;
 
-  unsafe impl ClassType for NSToastPanel {
-    #[inherits(NSResponder, NSObject)]
-    type Super = NSPanel;
-    type Mutability = MainThreadOnly;
-    const NAME: &'static str = "NSToastPanel";
-  }
+define_class!(
+    #[unsafe(super = NSPanel)]
+    #[name = "ToastPanel"]
+    #[thread_kind = MainThreadOnly]
+    #[ivars = Ivars]
+    struct ToastPanel;
 
-  impl DeclaredClass for NSToastPanel { }
+    unsafe impl NSObjectProtocol for ToastPanel {}
 
-  unsafe impl NSToastPanel {
-    #[method(canBecomeKeyWindow)]
-    fn __can_become_key_window() -> bool {
-        false
-    }
+    unsafe impl NSAnimatablePropertyContainer for ToastPanel {}
 
-    #[method(show:)]
-    fn __show(&self, fade_duration: f64) {
-        unsafe {
+    impl ToastPanel {
+      #[unsafe(method(canBecomeKeyWindow))]
+      fn __can_become_key_window() -> bool {
+         false
+      }
+
+      #[unsafe(method(show:))]
+      fn __show(&self, fade_duration: f64) {
+          unsafe {
             self.setAlphaValue(0.0);
 
             self.orderFrontRegardless();
 
-             NSAnimationContext::currentContext().setDuration(fade_duration);
+            NSAnimationContext::currentContext().setDuration(fade_duration);
 
             self.animator().setAlphaValue(1.0);
-        };
+            };
+        }
+
+        #[unsafe(method(hide:))]
+        fn __hide(&self, fade_duration: f64) {
+          unsafe { self.setAlphaValue(1.0) };
+
+          let group: Box<dyn Fn(NonNull<NSAnimationContext>)> = Box::new(|ctx| {
+              let context = unsafe { ctx.as_ref() };
+
+              unsafe { context.setDuration(fade_duration) };
+
+              let panel = self.retain();
+
+              let cb: Box<dyn Fn()> = Box::new(move ||{
+                  panel.orderOut(None);
+              });
+
+              let cb = RcBlock::new(cb);
+
+              unsafe { context.setCompletionHandler(Some(&cb)) };
+
+              unsafe { self.animator().setAlphaValue(0.0) };
+          });
+
+          let group = RcBlock::new(group);
+
+          unsafe {
+              NSAnimationContext::runAnimationGroup(&group)
+          };
+        }
+
+
     }
-
-    #[method(hide:)]
-    fn __hide(&self, fade_duration: f64) {
-        unsafe { self.setAlphaValue(1.0) };
-
-        let group: Box<dyn Fn(NonNull<NSAnimationContext>)> = Box::new(|ctx| {
-            let context = unsafe { ctx.as_ref() };
-
-            unsafe { context.setDuration(fade_duration) };
-
-            let panel = self.retain();
-
-            let cb: Box<dyn Fn()> = Box::new(move ||{
-                panel.orderOut(None);
-            });
-
-            let cb = RcBlock::new(cb);
-
-            unsafe { context.setCompletionHandler(Some(&cb)) };
-
-            unsafe { self.animator().setAlphaValue(0.0) };
-        });
-
-        let group = RcBlock::new(group);
-
-        unsafe {
-            NSAnimationContext::runAnimationGroup(&group)
-        };
-    }
-  }
 );
 
-extern_methods!(
-    unsafe impl NSToastPanel {
-        #[method_id(@__retain_semantics New new)]
+impl ToastPanel {
+    extern_methods!(
+        #[unsafe(method(new))]
         pub unsafe fn new(mtm: MainThreadMarker) -> Retained<Self>;
-    }
-);
 
-extern_methods!(
-    unsafe impl NSToastPanel {
         #[allow(non_snake_case)]
-        #[method(setFrame:display:)]
+        #[unsafe(method(setFrame:display:))]
         pub fn setFrame_display(&self, frame_rect: NSRect, flag: bool);
-    }
-);
+    );
+}
 
-unsafe impl NSObjectProtocol for NSToastPanel {}
-
-unsafe impl NSAnimatablePropertyContainer for NSToastPanel {}
-
-unsafe impl Sync for NSToastPanel {}
-
-unsafe impl Send for NSToastPanel {}
-
-impl NSToastPanel {
-    fn default() -> Retained<NSToastPanel> {
+impl ToastPanel {
+    fn default() -> Retained<ToastPanel> {
         let mtm = MainThreadMarker::new().unwrap();
 
-        let panel = unsafe { NSToastPanel::new(mtm) };
+        let panel = unsafe { ToastPanel::new(mtm) };
 
         panel.setFrame_display(NSRect::ZERO, false);
 
         panel.setStyleMask(NSWindowStyleMask::NonactivatingPanel | NSWindowStyleMask::Borderless);
 
-        unsafe { panel.setBackingType(NSBackingStoreType::NSBackingStoreBuffered) };
+        unsafe { panel.setBackingType(NSBackingStoreType::Buffered) };
 
         unsafe {
             panel.setFloatingPanel(true);
@@ -163,15 +153,15 @@ impl NSToastPanel {
             visual_effect_view.setMaterial(NSVisualEffectMaterial::Popover);
 
             visual_effect_view.setAutoresizingMask(
-                NSAutoresizingMaskOptions::NSViewWidthSizable
-                    | NSAutoresizingMaskOptions::NSViewHeightSizable,
+                NSAutoresizingMaskOptions::ViewWidthSizable
+                    | NSAutoresizingMaskOptions::ViewHeightSizable,
             );
 
             content_view.setWantsLayer(true);
 
             content_view.addSubview_positioned_relativeTo(
                 &visual_effect_view,
-                NSWindowOrderingMode::NSWindowBelow,
+                NSWindowOrderingMode::Below,
                 None,
             );
         }
@@ -189,6 +179,12 @@ impl NSToastPanel {
         let () = unsafe { msg_send![self, hide: fade_duration] };
     }
 }
+
+struct Panel(Retained<ToastPanel>);
+
+unsafe impl Sync for Panel {}
+
+unsafe impl Send for Panel {}
 
 struct ToastTimer(Retained<NSTimer>);
 
@@ -227,7 +223,7 @@ impl Default for ToastConfig {
 }
 
 pub struct Toast {
-    panel: Retained<NSToastPanel>,
+    panel: Panel,
     timer: Arc<Mutex<Option<ToastTimer>>>,
     options: ToastConfig,
 }
@@ -235,7 +231,7 @@ pub struct Toast {
 impl Default for Toast {
     fn default() -> Self {
         Self {
-            panel: NSToastPanel::default(),
+            panel: Panel(ToastPanel::default()),
             timer: Arc::new(Mutex::new(None)),
             options: Default::default(),
         }
@@ -245,7 +241,7 @@ impl Default for Toast {
 impl Toast {
     pub fn new(options: ToastConfig) -> Self {
         Self {
-            panel: NSToastPanel::default(),
+            panel: Panel(ToastPanel::default()),
             options,
             ..Default::default()
         }
@@ -253,10 +249,10 @@ impl Toast {
 
     fn message(&self, message: &str) -> Retained<NSMutableAttributedString> {
         let html = format!(
-      "<html><head><meta charset=\"utf-8\"/><style>body {{ font: caption; font-size: {}px; }} p {{ display: inline-block; text-align: center; }}</style></head><body>{}</body>",
-      self.options.font_size,
-      markdown::to_html(message)
-    );
+          "<html><head><meta charset=\"utf-8\"/><style>body {{ font: caption; font-size: {}px; }} p {{ display: inline-block; text-align: center; }}</style></head><body>{}</body>",
+          self.options.font_size,
+          markdown::to_html(message)
+        );
 
         let html = NSString::from_str(&html);
 
@@ -278,12 +274,12 @@ impl Toast {
         let paragraph_style = unsafe { NSMutableParagraphStyle::new() };
 
         unsafe {
-            paragraph_style.setLineBreakMode(NSLineBreakMode::NSLineBreakByTruncatingTail);
+            paragraph_style.setLineBreakMode(NSLineBreakMode::ByTruncatingTail);
         }
 
         let final_attributed_string = NSMutableAttributedString::alloc();
 
-        let mut final_attributed_string = NSMutableAttributedString::initWithAttributedString(
+        let final_attributed_string = NSMutableAttributedString::initWithAttributedString(
             final_attributed_string,
             &attributed_string,
         );
@@ -310,11 +306,11 @@ impl Toast {
         let size: CGSize = unsafe { objc2::msg_send![attributed_string, size] };
 
         NSRect {
-            origin: NSPoint {
+            origin: CGPoint {
                 x: self.options.padding.0,
                 y: -self.options.padding.1,
             },
-            size: NSSize {
+            size: CGSize {
                 width: size.width.ceil() + self.options.padding.0 * 2.0,
                 height: size.height.ceil() + self.options.padding.1 * 2.0,
             },
@@ -337,14 +333,14 @@ impl Toast {
         let offset = self.options.offset;
 
         NSRect {
-            origin: NSPoint {
+            origin: CGPoint {
                 x: monitor_position.x + monitor_size.width / 2.0 - width / 2.0,
                 y: match self.options.position {
                     ToastPosition::Top => monitor_position.y + monitor_size.height - offset,
                     ToastPosition::Bottom => monitor_position.y + offset,
                 },
             },
-            size: NSSize { width, height },
+            size: CGSize { width, height },
         }
     }
 
@@ -381,9 +377,9 @@ impl Toast {
     fn resize(&self, message_frame: NSRect) {
         let panel_frame = self.window_frame(message_frame);
 
-        self.panel.setFrame_display(panel_frame, true);
+        self.panel.0.setFrame_display(panel_frame, true);
 
-        let content_view = self.panel.contentView().unwrap();
+        let content_view = self.panel.0.contentView().unwrap();
 
         let layer = unsafe { content_view.layer().unwrap() };
 
@@ -393,7 +389,7 @@ impl Toast {
     }
 
     fn update_label(&self, message: Retained<NSMutableAttributedString>, frame: NSRect) {
-        let content_view = self.panel.contentView().unwrap();
+        let content_view = self.panel.0.contentView().unwrap();
 
         let label = self.label(message, frame);
 
@@ -421,9 +417,9 @@ impl Toast {
 
         self.update_label(message, frame);
 
-        self.panel.show(self.options.fade_duration);
+        self.panel.0.show(self.options.fade_duration);
 
-        let panel = self.panel.retain();
+        let panel = self.panel.0.retain();
 
         let fade_duration = self.options.fade_duration;
 

@@ -17,3 +17,6 @@ tauri.workspace = true
 serde.workspace = true
 cocoa.workspace = true
 objc.workspace = true
+
+[features]
+cargo-clippy = []

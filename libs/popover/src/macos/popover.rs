@@ -1,7 +1,9 @@
+use objc2_foundation::{NSPoint as CGPoint, NSRect as CGRect, NSSize as CGSize};
+
 use cocoa::{
     appkit::{CGFloat, NSViewHeightSizable, NSViewWidthSizable, NSWindowOrderingMode},
     base::id,
-    foundation::{NSPoint, NSRect, NSSize},
+    foundation::NSRect,
 };
 use objc::{
     class,
@@ -15,7 +17,7 @@ use objc2_app_kit::NSBezierPath;
 
 use objc_id::Id;
 
-use objc2_foundation::{CGPoint, CGRect, CGSize, NSEdgeInsets, NSEdgeInsetsZero};
+use objc2_foundation::{NSEdgeInsets, NSEdgeInsetsZero};
 
 use objc_foundation::INSObject;
 
@@ -213,17 +215,17 @@ impl PopoverView {
 
         let bg_color = unsafe { this.get_ivar::<id>("background_color") };
 
-        let bg_rect = NSRect::new(
-            rect.origin,
-            NSSize::new(rect.size.width, rect.size.height - arrow_height),
+        let bg_rect = CGRect::new(
+            CGPoint::new(rect.origin.x, rect.origin.y),
+            CGSize::new(rect.size.width, rect.size.height - arrow_height),
         );
 
-        let bg_rect = NSRect::new(
-            NSPoint::new(
+        let bg_rect = CGRect::new(
+            CGPoint::new(
                 bg_rect.origin.x + border_width,
                 bg_rect.origin.y + border_width,
             ),
-            NSSize::new(
+            CGSize::new(
                 bg_rect.size.width - 2.0 * border_width,
                 bg_rect.size.height - 2.0 * border_width,
             ),
@@ -252,19 +254,19 @@ impl PopoverView {
 
         let y_max = bg_rect.origin.y + bg_rect.size.height;
 
-        let left_point = NSPoint::new(x - arrow_width / 2.0, y_max);
+        let left_point = CGPoint::new(x - arrow_width / 2.0, y_max);
 
-        let to_point = NSPoint::new(x, y_max + arrow_height);
+        let to_point = CGPoint::new(x, y_max + arrow_height);
 
-        let right_point = NSPoint::new(x + arrow_width / 2.0, y_max);
+        let right_point = CGPoint::new(x + arrow_width / 2.0, y_max);
 
-        let cp11 = NSPoint::new(x - arrow_width / 6.0, y_max);
+        let cp11 = CGPoint::new(x - arrow_width / 6.0, y_max);
 
-        let cp12 = NSPoint::new(x - arrow_width / 9.0, y_max + arrow_height);
+        let cp12 = CGPoint::new(x - arrow_width / 9.0, y_max + arrow_height);
 
-        let cp21 = NSPoint::new(x + arrow_width / 9.0, y_max + arrow_height);
+        let cp21 = CGPoint::new(x + arrow_width / 9.0, y_max + arrow_height);
 
-        let cp22 = NSPoint::new(x + arrow_width / 6.0, y_max);
+        let cp22 = CGPoint::new(x + arrow_width / 6.0, y_max);
 
         unsafe {
             control_points.appendBezierPathWithOvalInRect(CGRect::new(

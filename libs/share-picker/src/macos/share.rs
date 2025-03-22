@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use objc2::{msg_send_id, rc::Retained, ClassType};
+use objc2::{msg_send, rc::Retained, ClassType};
 use objc2_app_kit::{NSSharingServicePicker, NSView, NSWindow};
 use objc2_foundation::{
     MainThreadMarker, NSArray, NSPoint, NSRect, NSRectEdge, NSSize, NSString, NSURL,
@@ -52,9 +52,13 @@ impl<R: Runtime> SharePicker<R> for WebviewWindow<R> {
             .collect::<Vec<Retained<NSURL>>>();
 
         let picker: Retained<NSSharingServicePicker> = unsafe {
-            let items = NSArray::from_vec(urls);
+            let items = NSArray::from_retained_slice(urls.as_slice())
+                .downcast()
+                .unwrap();
 
-            msg_send_id![NSSharingServicePicker::alloc(), initWithItems: items.as_ref()]
+            let obj = msg_send![NSSharingServicePicker::class(), alloc];
+
+            NSSharingServicePicker::initWithItems(obj, &items)
         };
 
         let window = self.ns_window().unwrap();
