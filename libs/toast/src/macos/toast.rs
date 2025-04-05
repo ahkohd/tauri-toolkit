@@ -12,9 +12,9 @@ use objc2::{
 };
 use objc2_app_kit::{
     NSAnimatablePropertyContainer, NSAnimationContext, NSAutoresizingMaskOptions,
-    NSBackingStoreType, NSColor, NSFloatingWindowLevel, NSLineBreakMode, NSMutableParagraphStyle,
-    NSPanel, NSTextField, NSVisualEffectBlendingMode, NSVisualEffectMaterial, NSVisualEffectState,
-    NSVisualEffectView, NSWindowCollectionBehavior, NSWindowOrderingMode, NSWindowStyleMask,
+    NSBackingStoreType, NSColor, NSLineBreakMode, NSMutableParagraphStyle, NSPanel, NSTextField,
+    NSVisualEffectBlendingMode, NSVisualEffectMaterial, NSVisualEffectState, NSVisualEffectView,
+    NSWindowCollectionBehavior, NSWindowOrderingMode, NSWindowStyleMask,
 };
 use objc2_foundation::{
     MainThreadMarker, NSAttributedString, NSAttributedStringKey, NSMutableAttributedString,
@@ -118,9 +118,10 @@ impl ToastPanel {
             panel.setHidesOnDeactivate(false);
         };
 
-        panel.setLevel(NSFloatingWindowLevel);
+        #[allow(non_snake_case)]
+        let NSModalPanelWindowLevel = 8;
 
-        panel.setHasShadow(true);
+        panel.setLevel(NSModalPanelWindowLevel);
 
         unsafe {
             panel.setBackgroundColor(Some(&NSColor::clearColor()));
@@ -197,6 +198,7 @@ pub enum ToastPosition {
     #[allow(dead_code)]
     Top,
     Bottom,
+    At(f64, f64),
 }
 
 #[derive(Debug, Clone)]
@@ -207,6 +209,7 @@ pub struct ToastConfig {
     pub offset: f64,
     pub duration: f64,
     pub fade_duration: f64,
+    pub shadow: bool,
 }
 
 impl Default for ToastConfig {
@@ -218,6 +221,7 @@ impl Default for ToastConfig {
             offset: 150.0,
             duration: 3.0,
             fade_duration: 0.3,
+            shadow: false,
         }
     }
 }
@@ -247,10 +251,22 @@ impl Toast {
         }
     }
 
-    fn message(&self, message: &str) -> Retained<NSMutableAttributedString> {
+    fn message(
+        &self,
+        message: &str,
+        options: Option<&ToastConfig>,
+    ) -> Retained<NSMutableAttributedString> {
+        let font_size = {
+            if let Some(opt) = options {
+                opt.font_size
+            } else {
+                self.options.font_size
+            }
+        };
+
         let html = format!(
           "<html><head><meta charset=\"utf-8\"/><style>body {{ font: caption; font-size: {}px; }} p {{ display: inline-block; text-align: center; }}</style></head><body>{}</body>",
-          self.options.font_size,
+          font_size,
           markdown::to_html(message)
         );
 
@@ -300,24 +316,47 @@ impl Toast {
         final_attributed_string
     }
 
-    fn message_frame(&self, attributed_string: Retained<NSMutableAttributedString>) -> NSRect {
+    fn message_frame(
+        &self,
+        attributed_string: Retained<NSMutableAttributedString>,
+        options: Option<&ToastConfig>,
+    ) -> NSRect {
         let attributed_string = Retained::into_raw(attributed_string);
 
         let size: CGSize = unsafe { objc2::msg_send![attributed_string, size] };
 
-        NSRect {
-            origin: CGPoint {
-                x: self.options.padding.0,
-                y: -self.options.padding.1,
-            },
-            size: CGSize {
-                width: size.width.ceil() + self.options.padding.0 * 2.0,
-                height: size.height.ceil() + self.options.padding.1 * 2.0,
-            },
-        }
+        let origin = {
+            if let Some(opts) = &options {
+                CGPoint {
+                    x: opts.padding.0,
+                    y: -opts.padding.1,
+                }
+            } else {
+                CGPoint {
+                    x: self.options.padding.0,
+                    y: -self.options.padding.1,
+                }
+            }
+        };
+
+        let size = {
+            if let Some(opts) = options {
+                CGSize {
+                    width: size.width.ceil() + opts.padding.0 * 2.0,
+                    height: size.height.ceil() + opts.padding.1 * 2.0,
+                }
+            } else {
+                CGSize {
+                    width: size.width.ceil() + self.options.padding.0 * 2.0,
+                    height: size.height.ceil() + self.options.padding.1 * 2.0,
+                }
+            }
+        };
+
+        NSRect { origin, size }
     }
 
-    fn window_frame(&self, msg_frame: NSRect) -> NSRect {
+    fn window_frame(&self, msg_frame: NSRect, options: Option<&ToastConfig>) -> NSRect {
         let monitor = get_monitor_with_cursor().unwrap();
 
         let scale_factor = monitor.scale_factor();
@@ -330,14 +369,32 @@ impl Toast {
 
         let height = msg_frame.size.height;
 
-        let offset = self.options.offset;
+        let offset = {
+            if let Some(opts) = options.cloned() {
+                opts.offset
+            } else {
+                self.options.offset
+            }
+        };
+
+        let position = {
+            if let Some(opts) = options.cloned() {
+                opts.position
+            } else {
+                self.options.position.clone()
+            }
+        };
 
         NSRect {
             origin: CGPoint {
-                x: monitor_position.x + monitor_size.width / 2.0 - width / 2.0,
-                y: match self.options.position {
+                x: match position {
+                    ToastPosition::At(x, _) => monitor_position.x + x,
+                    _ => monitor_position.x + monitor_size.width / 2.0 - width / 2.0,
+                },
+                y: match position {
                     ToastPosition::Top => monitor_position.y + monitor_size.height - offset,
                     ToastPosition::Bottom => monitor_position.y + offset,
+                    ToastPosition::At(_, y) => (monitor_position.y + monitor_size.height) - y,
                 },
             },
             size: CGSize { width, height },
@@ -374,8 +431,8 @@ impl Toast {
         label
     }
 
-    fn resize(&self, message_frame: NSRect) {
-        let panel_frame = self.window_frame(message_frame);
+    fn resize(&self, message_frame: NSRect, options: Option<&ToastConfig>) {
+        let panel_frame = self.window_frame(message_frame, options);
 
         self.panel.0.setFrame_display(panel_frame, true);
 
@@ -400,36 +457,61 @@ impl Toast {
         }
     }
 
-    pub fn toast(&self, text: &str) {
+    pub fn toast(&self, text: &str, options: Option<ToastConfig>) {
         let is_timer = self.timer.lock().unwrap().is_some();
 
         if is_timer {
             unsafe { self.timer.lock().unwrap().as_ref().unwrap().0.invalidate() };
         }
 
-        let message = self.message(text);
+        let message = self.message(text, options.as_ref());
 
-        let frame = self.message_frame(NSMutableAttributedString::from_attributed_nsstring(
-            &message,
-        ));
+        let frame = self.message_frame(
+            NSMutableAttributedString::from_attributed_nsstring(&message),
+            options.as_ref(),
+        );
 
-        self.resize(frame);
+        self.resize(frame, options.as_ref());
 
         self.update_label(message, frame);
 
-        self.panel.0.show(self.options.fade_duration);
+        let fade_duration = {
+            if let Some(opts) = &options {
+                opts.fade_duration
+            } else {
+                self.options.fade_duration
+            }
+        };
+
+        let shadow = {
+            if let Some(opts) = &options {
+                opts.shadow
+            } else {
+                self.options.shadow
+            }
+        };
+
+        self.panel.0.setHasShadow(shadow);
+
+        self.panel.0.show(fade_duration);
 
         let panel = self.panel.0.retain();
-
-        let fade_duration = self.options.fade_duration;
 
         let callback: Box<dyn Fn(NonNull<NSTimer>)> = Box::new(move |_| {
             panel.hide(fade_duration);
         });
 
+        let duration = {
+            if let Some(opts) = &options {
+                opts.duration
+            } else {
+                self.options.duration
+            }
+        };
+
         let timer = unsafe {
             NSTimer::scheduledTimerWithTimeInterval_repeats_block(
-                self.options.duration,
+                duration,
                 false,
                 &RcBlock::new(callback),
             )
@@ -440,17 +522,17 @@ impl Toast {
 }
 
 pub trait ToastExt {
-    fn toast(&self, message: &str);
+    fn toast(&self, message: &str, options: Option<ToastConfig>);
 }
 
 impl<R: Runtime> ToastExt for AppHandle<R> {
-    fn toast(&self, message: &str) {
+    fn toast(&self, message: &str, options: Option<ToastConfig>) {
         let message = message.to_owned();
 
         let app_handle = self.clone();
 
         self.run_on_main_thread(move || {
-            app_handle.state::<Toast>().toast(&message);
+            app_handle.state::<Toast>().toast(&message, options);
         })
         .unwrap();
     }

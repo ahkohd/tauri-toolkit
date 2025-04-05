@@ -30,15 +30,16 @@ fn main() {
 
     // show a toast
     // `message` can be formatted in markdown 
-    app_handle.toast("Hello, **World!** 🎉");
+    app_handle.toast("Hello, **World!** 🎉", None);
 }
 ```
 
 ## Functions
 
-- `app_handle.toast(message: &str)`:
+- `app_handle.toast(message: &str, options: Option<ToastConfig>)`:
   Shows a toast
   - `message: &str`: The toast message. It supports markdown.
+  - `options: Option<ToastConfig>`: Options for the toast.
 
 ## ToastConfig
 Configure the toast
@@ -48,10 +49,12 @@ Configure the toast
 - `offset: f64`: Offset the toast position
 - `duration: f64`: The duration of the toast
 - `fade_duration: f64`: The duration of the enter and exit fade animation
+- `shadow: bool`: The toast panel has shadow
 
 ## ToastPosition
 - `Top`: The toast will be position at the top center of the monitor with cursor
 - `Bottom`: The toast will be position at the bottom center of the monitor with cursor
+- `At(x, y)`: Position the toast at a specific point. The origin is located at the top left corner 
 
 To configure your toast, use `Toast::new(...)` instead of `Toast::default()`. For example:
 ```rust
