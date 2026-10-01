@@ -10,7 +10,7 @@
 		"format-check": "biome format ."
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.3",
+		"@biomejs/biome": "^2.0.0",
 		"@rollup/plugin-node-resolve": "^16.0.0",
 		"@rollup/plugin-typescript": "^12.1.0"
 	},
